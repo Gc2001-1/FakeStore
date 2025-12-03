@@ -18,7 +18,6 @@ Aplicación web de e-commerce desarrollada con AngularJS que consume la API de [
 - [Uso](#-uso)
 - [Funcionalidades](#-funcionalidades)
 - [API Reference](#-api-reference)
-- [Capturas de Pantalla](#-capturas-de-pantalla)
 - [Créditos](#-créditos)
 - [Licencia](#-licencia)
 
