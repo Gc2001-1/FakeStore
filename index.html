@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es" ng-app="fakeStoreApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FakeStore - Tienda Online</title>
+    <link rel="icon" type="image/png" href="imagenes/favicon.png">
+    
+    <!-- Bootstrap 4 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body ng-controller="MainController">
+
+    <!-- ============================================ -->
+    <!-- NAVBAR -->
+    <!-- ============================================ -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand font-weight-bold d-flex align-items-center" href="index.html">
+                <img src="imagenes/favicon.png" width="40" height="40" class="mr-2 rounded" alt="Logo FakeStore">
+                <span>FakeStore</span>
+            </a>
+            
+            <div class="ml-auto d-flex align-items-center">
+                <!-- Botón del carrito -->
+                <button class="btn btn-outline-light mr-2" ng-click="abrirCarrito()" title="Ver carrito">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="badge badge-pill badge-danger ml-1">{{ carritoTotal | currency }}</span>
+                </button>
+                
+                <!-- Botón limpiar carrito -->
+                <button class="btn btn-outline-danger" ng-click="limpiarCarrito()" title="Vaciar carrito">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================ -->
+    <!-- SLIDER / CAROUSEL -->
+    <!-- ============================================ -->
+    <div id="carouselSlider" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+            <li data-target="#carouselSlider" data-slide-to="0" class="active"></li>
+            <li data-target="#carouselSlider" data-slide-to="1"></li>
+            <li data-target="#carouselSlider" data-slide-to="2"></li>
+        </ol>
+        
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&h=400&fit=crop" 
+                     class="d-block w-100 carousel-img" alt="Slider 1">
+                <div class="carousel-caption">
+                    <h3>Bienvenido a FakeStore</h3>
+                    <p>Los mejores productos al mejor precio</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="imagenes/imagen1.png" class="d-block w-100 carousel-img" alt="Slider 2">
+                <div class="carousel-caption">
+                    <h3>Tecnología de Vanguardia</h3>
+                    <p>Descubre las últimas novedades</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="imagenes/imagen2.png" class="d-block w-100 carousel-img" alt="Slider 3">
+                <div class="carousel-caption">
+                    <h3>Ofertas Especiales</h3>
+                    <p>No te pierdas nuestras promociones</p>
+                </div>
+            </div>
+        </div>
+        
+        <a class="carousel-control-prev" href="#carouselSlider" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </a>
+        <a class="carousel-control-next" href="#carouselSlider" role="button" data-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </a>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- ============================================ -->
+    <div class="container my-5">
+        
+        <!-- FILTROS -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-filter"></i> Filtrar Productos
+                        </h5>
+                        
+                        <div class="row">
+                            <!-- Filtro por categoría -->
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="selectCategoria" class="font-weight-bold">Categoría:</label>
+                                <select 
+                                    id="selectCategoria" 
+                                    class="form-control" 
+                                    ng-model="categoriaSeleccionada" 
+                                    ng-change="filtrarPorCategoria()">
+                                    <option value="all">Todas las categorías</option>
+                                    <option ng-repeat="categoria in categorias" value="{{categoria}}">
+                                        {{categoria}}
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <!-- Búsqueda por texto -->
+                            <div class="col-md-6">
+                                <label for="inputBusqueda" class="font-weight-bold">Buscar producto:</label>
+                                <input 
+                                    id="inputBusqueda"
+                                    type="text" 
+                                    class="form-control" 
+                                    placeholder="Escribe el nombre del producto..." 
+                                    ng-model="busquedaTexto" 
+                                    ng-change="aplicarFiltroBusqueda()">
+                            </div>
+                        </div>
+                        
+                        <!-- Etiqueta de categoría seleccionada -->
+                        <div class="mt-3" ng-if="categoriaSeleccionada !== 'all'">
+                            <span class="badge badge-primary badge-lg">
+                                Productos de la categoría: <strong>{{categoriaSeleccionada}}</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INDICADOR DE CARGA -->
+        <div class="row" ng-if="cargando">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="sr-only">Cargando...</span>
+                </div>
+                <p class="mt-3 text-muted">Cargando productos desde la API...</p>
+            </div>
+        </div>
+
+        <!-- ERROR DE API -->
+        <div class="row" ng-if="errorAPI">
+            <div class="col-12">
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Error al cargar productos</h4>
+                    <p>No se pudieron cargar los productos desde la API. Por favor, verifica tu conexión a internet e intenta recargar la página.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENSAJE SIN RESULTADOS -->
+        <div class="row" ng-if="!cargando && !errorAPI && productosFiltrados.length === 0">
+            <div class="col-12">
+                <div class="alert alert-info text-center" role="alert">
+                    <i class="fas fa-search fa-2x mb-2"></i>
+                    <p class="mb-0">No se encontraron productos con los filtros seleccionados.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRODUCTOS (CARDS) -->
+        <div class="row">
+            <div class="col-md-4 col-lg-3 mb-4" ng-repeat="producto in productosFiltrados">
+                <div class="card h-100 shadow-sm producto-card">
+                    <img ng-src="{{producto.image}}" 
+                         class="card-img-top p-3 producto-img" 
+                         alt="{{producto.title}}"
+                         onerror="this.src='imagenes/placeholder.png'">
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title">{{producto.title}}</h6>
+                        <p class="card-text text-muted small mb-2">
+                            <span class="badge badge-secondary">{{producto.category}}</span>
+                        </p>
+                        <h5 class="text-success font-weight-bold">{{producto.price | currency}}</h5>
+                        <button class="btn btn-dark btn-block mt-auto" ng-click="verDetalles(producto)">
+                            <i class="fas fa-eye"></i> Ver Detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL: DETALLES DEL PRODUCTO -->
+    <!-- ============================================ -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle"></i> Detalles del Producto
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-5 text-center">
+                            <img ng-src="{{productoSeleccionado.image}}" 
+                                 class="img-fluid" 
+                                 style="max-height: 300px; object-fit: contain;">
+                        </div>
+                        
+                        <div class="col-md-7">
+                            <h4 class="font-weight-bold">{{productoSeleccionado.title}}</h4>
+                            <span class="badge badge-info mb-3">{{productoSeleccionado.category}}</span>
+                            
+                            <p class="text-justify">{{productoSeleccionado.description}}</p>
+                            
+                            <hr>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Precio:</span>
+                                <h3 class="text-success font-weight-bold mb-0">
+                                    {{productoSeleccionado.price | currency}}
+                                </h3>
+                            </div>
+                            
+                            <div class="mt-3" ng-if="productoSeleccionado.rating">
+                                <span class="text-muted">Valoración:</span>
+                                <span class="text-warning">
+                                    <i class="fas fa-star"></i> {{productoSeleccionado.rating.rate}} 
+                                    <small class="text-muted">({{productoSeleccionado.rating.count}} reviews)</small>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" ng-click="agregarAlCarrito()">
+                        <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL: CARRITO DE COMPRAS -->
+    <!-- ============================================ -->
+    <div class="modal fade" id="modalCarrito" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-shopping-cart"></i> Carrito de Compras
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Carrito vacío -->
+                    <div ng-if="carrito.length === 0" class="text-center py-4">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Tu carrito está vacío</p>
+                    </div>
+                    
+                    <!-- Productos en el carrito -->
+                    <div ng-if="carrito.length > 0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Precio</th>
+                                        <th>Cantidad</th>
+                                        <th>Subtotal</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="item in carrito">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img ng-src="{{item.image}}" 
+                                                     class="mr-2" 
+                                                     style="width: 50px; height: 50px; object-fit: contain;">
+                                                <span class="small">{{item.title}}</span>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">{{item.precio | currency}}</td>
+                                        <td class="align-middle">
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-secondary" 
+                                                        ng-click="disminuirCantidad(item)">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                    {{item.cantidad}}
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" 
+                                                        ng-click="aumentarCantidad(item)">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle font-weight-bold">
+                                            {{item.precio * item.cantidad | currency}}
+                                        </td>
+                                        <td class="align-middle">
+                                            <button class="btn btn-sm btn-danger" 
+                                                    ng-click="eliminarDelCarrito(item)"
+                                                    title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Total -->
+                        <div class="text-right">
+                            <h4>Total: <span class="text-success font-weight-bold">{{carritoTotal | currency}}</span></h4>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                    <button type="button" 
+                            class="btn btn-success" 
+                            ng-click="procesarPago()" 
+                            ng-disabled="carrito.length === 0">
+                        <i class="fas fa-credit-card"></i> Pagar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FOOTER -->
+    <!-- ============================================ -->
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 FakeStore - Proyecto AngularJS</p>
+            <small class="text-muted">Consumiendo API de <a href="https://fakestoreapi.com" target="_blank" class="text-info">FakeStore API</a></small>
+        </div>
+    </footer>
+
+    <!-- ============================================ -->
+    <!-- SCRIPTS -->
+    <!-- ============================================ -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/services/storeService.js"></script>
+    <script src="js/controllers/mainController.js"></script>
+</body>
+</html>
